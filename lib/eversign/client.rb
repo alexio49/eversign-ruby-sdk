@@ -101,18 +101,16 @@ module Eversign
 
     def create_document(document, isFromTemplate = false)
       if document.files
-        for file in document.files
-          file.keys.each {|key| file.define_singleton_method(key) { self[key] }} if file.is_a? Hash
-          if file.file_url
-            file_response = self.upload_file(file.file_url)
-            if file.is_a? Hash
-              file['file_url'] = nil
-              file['file_id'] = file_response.file_id
-            else
-              file.file_url = nil
-              file.file_id = file_response.file_id
-            end
+        document.files.each do |file|
+          if file.is_a? Hash
+            file.keys.each { |key| file.define_singleton_method(key) { self[key] } }
+            file.keys.each { |key| file.define_singleton_method("#{key}=") { |v| self[key] = v } }
           end
+          next unless file.file_url
+
+          file_response = upload_file(file.file_url)
+          file.file_url = nil
+          file.file_id = file_response.file_id
         end
       end
       path = "/api/document?access_key=#{access_key}&business_id=#{business_id}"
