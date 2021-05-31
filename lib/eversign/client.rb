@@ -105,8 +105,13 @@ module Eversign
           file.keys.each {|key| file.define_singleton_method(key) { self[key] }} if file.is_a? Hash
           if file.file_url
             file_response = self.upload_file(file.file_url)
-            file.file_url = nil
-            file.file_id = file_response.file_id
+            if file.is_a? Hash
+              file['file_url'] = nil
+              file['file_id'] = file_response.file_id
+            else
+              file.file_url = nil
+              file.file_id = file_response.file_id
+            end
           end
         end
       end
